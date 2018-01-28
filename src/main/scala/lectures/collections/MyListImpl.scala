@@ -1,5 +1,7 @@
 package lectures.collections
 
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+
 /**
   * Представим, что по какой-то причине Вам понадобилась своя обертка над списком целых чисел List[Int]
   *
@@ -17,28 +19,25 @@ package lectures.collections
   */
 object MyListImpl extends App {
 
-  case class MyList(data: List[Int]) {
+  case class MyList[T, M[T]](data: Seq[T]) {
 
-    def flatMap(f: (Int => MyList)) =
-      MyList(data.flatMap(inp => f(inp).data))
+    def flatMap(f: (T => MyList[T, Seq])): MyList[T, Seq] = {
+      val newData = data.flatMap(elem => f(elem).data)
+      MyList(newData)
+    }
 
-    /** я вообще думал, что flatMap следует
-      * реализовывать через map (ведь map может позволять
-      * создавать List[ List[Int] ]. Но если надо наоборот,
-      * то на ум приходит только один вариант: (Int)=>Int
-      */
-    def map(f: (Int => Int)) =
+    def map(f: (T => T)): MyList[T, Seq] =
       flatMap(inp => MyList(List(f(inp))))
 
-    def foldLeft(acc: Int)(op: (Int,Int) => Int): Int = data match{
+    def foldLeft(acc: T)(op: (T,T) => T): T = data match{
       case Nil => acc
       case head :: tail => MyList(tail).foldLeft(op(acc,head))(op)
     }
 
-    def filter(f: (Int) => Boolean) =
+    def filter(f: (T) => Boolean) =
       flatMap{ inp => MyList(
           if (f(inp)) List(inp)
-          else List.empty[Int]
+          else List.empty[T]
         )
       }
   }
@@ -47,5 +46,12 @@ object MyListImpl extends App {
   require(MyList(List(1, 2, 3, 4, 5, 6)).filter(_ % 2 == 0).data == List(2, 4, 6))
   require(MyList(List(1, 2, 3, 4, 5, 6)).foldLeft(0)((x,y) => x + y) == 21)
   require(MyList(Nil).foldLeft(0)((x,y) => x + y) == 0)
+
+  //Task11:
+
+  require(MyList[Int, List](List(1, 2, 3, 4, 5, 6)).map(p => p * 2).data == List(2, 4, 6, 8, 10, 12))
+  require(MyList[Long, ListBuffer](ListBuffer(1, 2, 3, 4, 5, 6)).filter(_ % 2 == 0).data == List(2, 4, 6))
+  require(MyList[Int, List](List(1, 2, 3, 4, 5, 6)).foldLeft(0)((a,b) => a + b) == 21)
+  require(MyList[Float, IndexedSeq](ArrayBuffer.empty[Float]).foldLeft(0)((a,b) => a + b) == 0)
 
 }
