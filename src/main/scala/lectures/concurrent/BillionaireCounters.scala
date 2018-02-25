@@ -35,6 +35,8 @@ object SimpleBillionaireCounter extends App with CounterWithReporter {
 
   var counter = 0
 
+  object Synch
+
   override def getCounterValue: Int = counter
 
   override def getTasks: Seq[Runnable] =
@@ -42,7 +44,9 @@ object SimpleBillionaireCounter extends App with CounterWithReporter {
       new Runnable {
         override def run(): Unit = {
           (1 to 1000000).foreach { _ =>
-            counter += 1
+            Synch.synchronized{
+              counter+=1
+            }
           }
         }
       }
