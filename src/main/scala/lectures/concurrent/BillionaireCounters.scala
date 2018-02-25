@@ -1,6 +1,7 @@
 package lectures.concurrent
 
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
   *
@@ -16,9 +17,9 @@ import java.util.concurrent.Executors
   * Так как вы уже кое-что знаете, то давайте не ударим в грязь лицом и предоставим сразу
   * несколько решений и выпишем сюда время их работы на вашей машине:
   *
-  * - SimpleBillionaireCounter        - ??? мс
+  * - SimpleBillionaireCounter        - 47300 мс
   * - LockingBillionaireCounter       - ??? мс
-  * - AtomicBillionaireCounter        - ??? мс
+  * - AtomicBillionaireCounter        - 24500 мс
   * - ExtremelyFastBillionaireCounter - ??? мс
   *
   * Некоторые правила:
@@ -61,8 +62,22 @@ object SimpleBillionaireCounter extends App with CounterWithReporter {
   * Напишите аналогичную реализацию подсчета без использования блокировок.
   */
 object AtomicBillionaireCounter extends App with CounterWithReporter  {
-  override def getCounterValue: Int = ???
-  override def getTasks: Seq[Runnable] = ???
+
+  val counter = new AtomicInteger(0)
+
+  override def getCounterValue: Int = counter.get()
+
+  override def getTasks: Seq[Runnable] = (1 to 1000).map { _ =>
+    new Runnable {
+      override def run(): Unit = {
+        (1 to 1000000).foreach { _ =>
+            counter.incrementAndGet()
+        }
+      }
+    }
+  }
+
+  countEverything()
 }
 
 
