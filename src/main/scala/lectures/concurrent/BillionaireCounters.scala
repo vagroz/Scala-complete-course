@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger
   * - SimpleBillionaireCounter        - 47300 мс
   * - LockingBillionaireCounter       - ??? мс
   * - AtomicBillionaireCounter        - 24500 мс
-  * - ExtremelyFastBillionaireCounter - ??? мс
+  * - ExtremelyFastBillionaireCounter - 1500 мс
   *
   * Некоторые правила:
   * - количество тасков и итераций внутри Runnable не меняем (иначе ваш дядя обидится)
@@ -85,8 +85,24 @@ object AtomicBillionaireCounter extends App with CounterWithReporter  {
   * А слабо написать еще быстрее?
   */
 object ExtremelyFastBillionaireCounter extends App with CounterWithReporter {
-  override def getCounterValue: Int = ???
-  override def getTasks: Seq[Runnable] = ???
+
+  val counter = new AtomicInteger(0)
+
+  override def getCounterValue: Int = counter.get()
+
+  override def getTasks: Seq[Runnable] = (1 to 1000).map { _ =>
+    new Runnable {
+      var sum = 0
+      override def run(): Unit = {
+        (1 to 1000000).foreach { _ =>
+          sum += 1
+        }
+        counter.addAndGet(sum)
+      }
+    }
+  }
+
+  countEverything()
 }
 
 
