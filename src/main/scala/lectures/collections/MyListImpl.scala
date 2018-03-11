@@ -19,13 +19,13 @@ import scala.collection.mutable.{ArrayBuffer, ListBuffer}
   */
 object MyListImpl extends App {
 
-  case class MyList[T, M <: Seq[T]](data: Seq[T]) {
+  case class MyList[T, M <: Seq[T]](data: M) {
 
-    def flatMap(f: (T => MyList[T, Seq[T]])): MyList[T, Seq[T]] =
+    def flatMap[N](f: (T => MyList[N, Seq[N]])): MyList[N, Seq[N]] =
       MyList(data.flatMap(inp => f(inp).data))
 
-    def map(f: (T => T)): MyList[T, Seq[T]] =
-      flatMap { inp =>
+    def map[N](f: (T => N)): MyList[N, Seq[N]] =
+      flatMap[N] { inp =>
         MyList(Seq(f(inp)))
       }
 
@@ -39,7 +39,7 @@ object MyListImpl extends App {
       }
 
     def filter(f: (T) => Boolean) =
-      flatMap{ inp => MyList(
+      flatMap[T]{ inp => MyList(
           if (f(inp)) Seq(inp)
           else Seq.empty[T]
         )
@@ -60,10 +60,10 @@ object MyListImpl extends App {
     def apply[T](initData: ListBuffer[T]): MyListBuffer[T] = new MyListBuffer[T](initData)
   }
 
-  require(MyList(List(1, 2, 3, 4, 5, 6)).map(_ * 2).data == List(2, 4, 6, 8, 10, 12))
-  require(MyList(List(1, 2, 3, 4, 5, 6)).filter(_ % 2 == 0).data == List(2, 4, 6))
-  require(MyList(List(1, 2, 3, 4, 5, 6)).foldLeft(0)(tpl => tpl._1 + tpl._2) == 21)
-  require(MyList(List.empty[Int]).foldLeft(0)(tpl => tpl._1 + tpl._2) == 0)
+  require(MyList[Int, List[Int]](List(1, 2, 3, 4, 5, 6)).map(_ * 2).data == List(2, 4, 6, 8, 10, 12))
+  require(MyList[Int, List[Int]](List(1, 2, 3, 4, 5, 6)).filter(_ % 2 == 0).data == List(2, 4, 6))
+  require(MyList[Int, List[Int]](List(1, 2, 3, 4, 5, 6)).foldLeft(0)(tpl => tpl._1 + tpl._2) == 21)
+  require(MyList[Int, List[Int]](List.empty[Int]).foldLeft(0)(tpl => tpl._1 + tpl._2) == 0)
 
   require(MyList[Int, List[Int]](List(1, 2, 3, 4, 5, 6)).map(p => p * 2).data == List(2, 4, 6, 8, 10, 12))
   require(MyList[Long, ListBuffer[Long]](ListBuffer(1, 2, 3, 4, 5, 6)).filter(_ % 2 == 0).data == List(2, 4, 6))
