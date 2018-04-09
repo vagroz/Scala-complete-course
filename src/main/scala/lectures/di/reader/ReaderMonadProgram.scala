@@ -6,13 +6,13 @@ import cats.Id
 import cats.data.Reader
 import cats.implicits._
 import lectures.di.reader.DIDomain.ReaderTOption
-import lectures.di.{Configuration, UserServiceImpl, UserServiceProgramDeps}
+import lectures.di.{Configuration, ConnectionManagerImpl, UserServiceImpl, UserServiceProgramDeps}
 import lectures.functions.{AnonymousUser, User}
 
 
 case class UserServiceProgramDepsImpl(connection: Connection, configuration: Configuration) extends UserServiceProgramDeps {
-  // lazy val connectionManager = ConnectionManagerImpl(configuration)
-  lazy val us = new UserServiceImpl(connection)
+  lazy val connectionManager = new ConnectionManagerImpl(configuration)
+  lazy val us = new UserServiceImpl(connectionManager)
 }
 
 object UserServiceReaderDIProgramImpl {

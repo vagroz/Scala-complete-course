@@ -15,27 +15,39 @@ import scala.collection.mutable
   * * создать реализацию трейта ConnectionManager
   * * заменить параметр connection на connectionManager
   *
-  * @param connection - connection to local users database
+  * @param connectionManager - manager to local users database
   */
-class UserServiceImpl(connection: Connection) extends UserService {
-  override def userByCredentials(name: String, pwd: String): Option[User] = try {
-    val stmt = connection.prepareStatement("select name, pwd, id from users where name = ?")
-    stmt.setString(1, name)
-    val rs = stmt.executeQuery()
-    Some(LPUser(rs.getInt(3), LPCredentials(rs.getString(1), rs.getString(2))))
-  } catch {
-    case _: Exception => None
-  } finally {
-    connection.commit()
+class UserServiceImpl(connectionManager: ConnectionManager) extends UserService {
+
+
+  override def userByCredentials(name: String, pwd: String): Option[User] = {
+    val connection = connectionManager.connection
+    connection.setAutoCommit(false)
+    try {
+      val stmt = connection.prepareStatement("select name, pwd, id from users where name = ?")
+      stmt.setString(1, name)
+      val rs = stmt.executeQuery()
+      Some(LPUser(rs.getInt(3), LPCredentials(rs.getString(1), rs.getString(2))))
+    } catch {
+      case _: Exception => None
+    } finally {
+      connection.commit()
+      connectionManager.close(connection)
+    }
   }
 
-  override def updateUserPwd(id: String, pwd: String): Unit = try {
-    val stmt = connection.prepareStatement("update users set pwd = ? where id = ?")
-    stmt.setString(1, pwd)
-    stmt.setString(2, id)
-    stmt.executeUpdate()
-  } finally {
-    connection.commit()
+  override def updateUserPwd(id: String, pwd: String): Unit = {
+    val connection = connectionManager.connection
+    connection.setAutoCommit(false)
+    try {
+      val stmt = connection.prepareStatement("update users set pwd = ? where id = ?")
+      stmt.setString(1, pwd)
+      stmt.setString(2, id)
+      stmt.executeUpdate()
+    } finally {
+      connection.commit()
+      connectionManager.close(connection)
+    }
   }
 }
 
