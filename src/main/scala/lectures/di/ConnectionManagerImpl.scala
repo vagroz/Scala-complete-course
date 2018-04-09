@@ -1,5 +1,5 @@
 package lectures.di
-import java.sql.Connection
+import java.sql.{Connection, DriverManager}
 
 /**
   * ConnectionManagerImpl - это реализация менеджера соединений, которая берет на себя
@@ -13,7 +13,12 @@ import java.sql.Connection
   *
   */
 class ConnectionManagerImpl(configuration: Configuration) extends ConnectionManager{
-  override def connection: Connection = ???
 
-  override def close(connection: Connection): Unit = ???
+  private val connectionUri = configuration.attribute("connectionUri").getOrElse("jdbc:default")
+
+  override def connection: Connection =
+    DriverManager.getConnection(connectionUri)
+
+  override def close(connection: Connection): Unit =
+    connection.close()
 }
