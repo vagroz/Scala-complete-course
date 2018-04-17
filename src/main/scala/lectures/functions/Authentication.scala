@@ -26,7 +26,7 @@ import scala.util.Random
   *
   * Что-либо еще, кроме знаков ???, заменять нельзя
   */
-object Authentication extends App {
+object Authentication {
 
   import AuthenticationData._
 
@@ -41,6 +41,8 @@ object Authentication extends App {
   val authenticated = for (user <- testUsers) yield {
     authByCard.lift(user) ++ authByLP.lift(user)
   }
+
+  val auth = (user: User) => authByCard.lift(user) ++ authByLP.lift(user)
 
  authenticated.flatten foreach println
 
