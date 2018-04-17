@@ -1,6 +1,6 @@
 package lectures.matching
 
-import lectures.matching.SortingStuff.{Book, StuffBox, Watches}
+import lectures.matching.SortingStuff.{Book, StuffBox, Watches, Knife, findMyKnife}
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{Matchers, WordSpec}
@@ -37,7 +37,7 @@ class SortingStuffGeneratorBasedTest extends WordSpec with Matchers with Propert
 
   // Override configuration if you need
   implicit override val generatorDrivenConfig: PropertyCheckConfiguration =
-    PropertyCheckConfiguration(minSize = 10)
+    PropertyCheckConfiguration(minSize = 10, minSuccessful = 30)
 
   val get: AfterWord = new AfterWord("have")
 
@@ -57,9 +57,11 @@ class SortingStuffGeneratorBasedTest extends WordSpec with Matchers with Propert
     }
   }
 
+  val knifeGen = Gen.option(Knife)
+
   "Sort stuff" should {
     "return collections" which {
-      "total size is equal to item amount" in pendingUntilFixed{
+      "total size is equal to item amount" in {
         val ms = generatorDrivenConfig.minSuccessful
 
         val books = (1 to ms) flatMap { _ => interestingBookGen.sample }
@@ -72,7 +74,13 @@ class SortingStuffGeneratorBasedTest extends WordSpec with Matchers with Propert
       }
     }
     "find knife" which {
-      "was occasionally disposed" in pending
+      "was occasionally disposed" in {
+
+        forAll(Gen.listOf(cheepWatchGen), Gen.listOf(bookGenerator), knifeGen){ (watches, books, maybeKnife) =>
+          val box = SortingStuff.sortJunk(Random.shuffle(watches ++ books ++ maybeKnife))
+          SortingStuff.findMyKnife(box) shouldBe maybeKnife.nonEmpty
+        }
+      }
     }
 
     "put boots in a proper place" when {

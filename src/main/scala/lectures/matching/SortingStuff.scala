@@ -28,7 +28,7 @@ package lectures.matching
   *
   */
 
-object SortingStuff extends App {
+object SortingStuff {
 
   object Knife extends Stuff
 
