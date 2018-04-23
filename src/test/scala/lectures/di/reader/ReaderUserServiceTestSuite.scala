@@ -2,11 +2,15 @@ package lectures.di.reader
 
 import java.sql.Connection
 
-import lectures.di.UserServiceTestSuite
+import lectures.di.{Configuration, ConnectionManager, ConnectionManagerImpl, UserServiceTestSuite}
 
-class ReaderUserServiceTestSuite(connection: Connection)(thunk:  => Unit) {
+class ReaderUserServiceTestSuite(thunk:  => Unit)(implicit configuration: Configuration) {
 
   import UserServiceTestSuite._
+
+  private val connectionManager = new ConnectionManagerImpl(configuration)
+
+  private val connection = connectionManager.connection
 
   private val dropTaleStmt = connection.prepareStatement(dropTale)
   dropTaleStmt.execute()
@@ -23,5 +27,8 @@ class ReaderUserServiceTestSuite(connection: Connection)(thunk:  => Unit) {
     insertStmt.setString(3, v)
     insertStmt.execute()
   }
+
+  connectionManager.close(connection)
+
   thunk
 }
