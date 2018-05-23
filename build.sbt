@@ -12,10 +12,7 @@ lazy val `scala-complete-course` = (project in file("."))
     parallelExecution in ThisBuild := false
   )
   .settings(
-    libraryDependencies ++= Seq(
-      "org.scala-lang" % "scala-library" % "2.12.2",
-      "org.scala-lang" % "scala-reflect" % "2.12.2"
-    ),
+    libraryDependencies ++= scala,
     libraryDependencies ++= testDependencies,
     libraryDependencies ++= akka,
     libraryDependencies ++= softwaremill
