@@ -1,6 +1,8 @@
 package lectures.di
 import java.sql.{Connection, DriverManager}
 
+import scala.util.Try
+
 /**
   * ConnectionManagerImpl - это реализация менеджера соединений, которая берет на себя
   * ответсвенность за создание и закрытие соединения с БД
@@ -13,13 +15,13 @@ import java.sql.{Connection, DriverManager}
   *
   */
 class ConnectionManagerImpl(configuration: Configuration) extends ConnectionManager{
-  override def connection: Connection = {
+  override def connection: Option[Connection] = Try {
     val uri = configuration.attribute("connectionUri").getOrElse("defaultUri")
     Class.forName("org.sqlite.JDBC")
-    val connection = DriverManager.getConnection("jdbc:sqlite:memory")
+    val connection = DriverManager.getConnection(uri)
     connection.setAutoCommit(false)
     connection
-  }
+  }.toOption
 
   override def close(connection: Connection): Unit = {
     connection.commit()

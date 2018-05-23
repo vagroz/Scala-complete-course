@@ -10,25 +10,32 @@ class ReaderUserServiceTestSuite(thunk:  => Unit)(implicit configuration: Config
 
   private val connectionManager = new ConnectionManagerImpl(configuration)
 
-  private val connection = connectionManager.connection
+  private val maybeConnection = connectionManager.connection
 
-  private val dropTaleStmt = connection.prepareStatement(dropTale)
-  dropTaleStmt.execute()
+  if (maybeConnection.isDefined) {
+    val connection = maybeConnection.get
 
-  private val createStmt = connection.prepareStatement(createTable)
-  createStmt.execute()
+    val dropTaleStmt = connection.prepareStatement(dropTale)
+    dropTaleStmt.execute()
 
-  private val insertStmt = connection.prepareStatement(addUser)
-  connection.commit()
+    val createStmt = connection.prepareStatement(createTable)
+    createStmt.execute()
 
-  for ((id, k, v) <- users) {
-    insertStmt.setInt(1, id)
-    insertStmt.setString(2, k)
-    insertStmt.setString(3, v)
-    insertStmt.execute()
+    val insertStmt = connection.prepareStatement(addUser)
+    connection.commit()
+
+    for ((id, k, v) <- users) {
+      insertStmt.setInt(1, id)
+      insertStmt.setString(2, k)
+      insertStmt.setString(3, v)
+      insertStmt.execute()
+    }
+
+    connectionManager.close(connection)
+
+    thunk
+  } else {
+    //log.error
+    println("Unable to get connection!")
   }
-
-  connectionManager.close(connection)
-
-  thunk
 }

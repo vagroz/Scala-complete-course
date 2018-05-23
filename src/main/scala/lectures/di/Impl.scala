@@ -19,29 +19,38 @@ import scala.collection.mutable
   */
 class UserServiceImpl(connectionManager: ConnectionManager) extends UserService {
   override def userByCredentials(name: String, pwd: String): Option[User] = {
-    val connection = connectionManager.connection
-    try {
-      val stmt = connection.prepareStatement("select name, pwd, id from users where name = ?")
-      stmt.setString(1, name)
-      val rs = stmt.executeQuery()
-      Some(LPUser(rs.getInt(3), LPCredentials(rs.getString(1), rs.getString(2))))
-    } catch {
-      case _: Exception => None
-    } finally {
-      connectionManager.close(connection)
+    connectionManager.connection match {
+      case Some(connection) =>
+        try {
+          val stmt = connection.prepareStatement("select name, pwd, id from users where name = ?")
+          stmt.setString(1, name)
+          val rs = stmt.executeQuery()
+          Some(LPUser(rs.getInt(3), LPCredentials(rs.getString(1), rs.getString(2))))
+        } catch {
+          case _: Exception => None
+        } finally {
+          connectionManager.close(connection)
+        }
+
+      case _ => None //log.error
     }
+
   }
 
 
   override def updateUserPwd(id: String, pwd: String): Unit = {
-    val connection = connectionManager.connection
-    try {
-      val stmt = connection.prepareStatement("update users set pwd = ? where id = ?")
-      stmt.setString(1, pwd)
-      stmt.setString(2, id)
-      stmt.executeUpdate()
-    } finally {
-      connection.commit()
+    connectionManager.connection match {
+      case Some(connection) =>
+        try {
+          val stmt = connection.prepareStatement("update users set pwd = ? where id = ?")
+          stmt.setString(1, pwd)
+          stmt.setString(2, id)
+          stmt.executeUpdate()
+        } finally {
+          connection.commit()
+        }
+
+      case _ => //log.error
     }
   }
 }
