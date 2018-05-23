@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicInteger
   * несколько решений и выпишем сюда время их работы на вашей машине:
   *
   * - SimpleBillionaireCounter        - 47300 мс
-  * - LockingBillionaireCounter       - ??? мс
   * - AtomicBillionaireCounter        - 24500 мс
   * - ExtremelyFastBillionaireCounter - 1500 мс
   *
