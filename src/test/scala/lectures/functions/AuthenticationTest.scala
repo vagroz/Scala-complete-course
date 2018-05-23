@@ -42,50 +42,49 @@ class AuthenticationTest extends FlatSpec
     Gen.posNum[Int].map(LPUser(_, cred))
   }
 
-
-  "Authentication by card" should "authorize successfully" in {
-    forAll(testCardUserGenerator){ user =>
-      registeredCards.contains(user.credentials) ==>
-        (Authentication.authByCard(user) == user)
+  def genWithAnonymous(gen: Gen[User]): Gen[(User, Boolean)] = {
+    Gen.frequency(
+      (8, gen),
+      (2, Gen.const(AnonymousUser()))
+    ).map {
+      case user: CardUser =>
+        (user, registeredCards.contains(user.credentials))
+      case user: LPUser =>
+        (user, registeredLoginAndPassword.contains(user.credentials))
+      case user =>
+        (user, false)
     }
   }
 
-  it should "reject bad users" in {
-    val badUserGenerator: Gen[User] = Gen.frequency(
-      (6, testCardUserGenerator.suchThat(user => !registeredCards.contains(user.credentials))),
-      (2, Gen.const(AnonymousUser())),
-      (2, testLPUserGenerator)
-    )
-    forAll(badUserGenerator){ badUser =>
-      Authentication.authByCard.lift(badUser) shouldBe 'empty
+
+  "Authentication by card" should "authorize successfully registered users and reject bad users" in {
+    forAll(genWithAnonymous(testCardUserGenerator)) {
+      case (user, isRegistered) =>
+        val result = Authentication.authByCard.lift(user)
+        result shouldBe {
+          if (isRegistered) Some(user)
+          else None
+        }
     }
   }
 
-  "Authentication by login" should "authorize successfully" in {
-    forAll(testLPUserGenerator.suchThat(user => registeredLoginAndPassword.contains(user.credentials))) { user =>
-      Authentication.authByLP(user) shouldBe user
+  "Authentication by login" should "authorize successfully registered users and reject bad users" in {
+    forAll(genWithAnonymous(testLPUserGenerator)) {
+      case (user, isRegistered) =>
+        val result = Authentication.authByLP.lift(user)
+        if (isRegistered) result should contain(user)
+        else result shouldBe 'empty
     }
   }
 
-  it should "reject bad users" in {
-    val badUserGenerator: Gen[User] = Gen.frequency(
-      (8, testLPUserGenerator.suchThat(user => !registeredLoginAndPassword.contains(user.credentials))),
-      (2, Gen.const(AnonymousUser())),
-      (2, testCardUserGenerator)
-    )
-    forAll(badUserGenerator){ badUser =>
-      Authentication.authByLP.lift(badUser) shouldBe 'empty
-    }
-  }
+  "Authentication" should "authorize and reject correctly" in {
 
-  "Authentication" should "authorize correctly" in {
-    val currentGen = Gen.frequency(
-      (4, testCardUserGenerator.map(user => (user, registeredCards.contains(user.credentials)))),
-      (4, testLPUserGenerator.map(user => (user, registeredLoginAndPassword.contains(user.credentials)))),
-      (2, Gen.const((AnonymousUser(), false)))
-    )
-
-    forAll(currentGen){
+    forAll(
+      Gen.frequency(
+        (1, genWithAnonymous(testLPUserGenerator)),
+        (1, genWithAnonymous(testCardUserGenerator))
+      )
+    ){
       case (user, isRegistered) =>
         val res = Authentication.auth(user)
         if (isRegistered) res should contain(user)
