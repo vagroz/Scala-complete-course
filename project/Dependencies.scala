@@ -38,5 +38,4 @@ object Dependencies {
     "-Ymacro-debug-lite",
     "-language:experimental.macros"
   )
-
 }
