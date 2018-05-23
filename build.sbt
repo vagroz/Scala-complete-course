@@ -15,7 +15,8 @@ lazy val `scala-complete-course` = (project in file("."))
     libraryDependencies ++= scala,
     libraryDependencies ++= testDependencies,
     libraryDependencies ++= akka,
-    libraryDependencies ++= softwaremill
+    libraryDependencies ++= softwaremill,
+    libraryDependencies += "org.scaldi" %% "scaldi" % "0.5.8"
   )
   .settings(assemblySettings: _*)
   .configs(oop)

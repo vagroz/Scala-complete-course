@@ -21,7 +21,7 @@ import lectures.functions.User
   */
 
 trait ConnectionManager {
-  def connection: Connection
+  def connection: Option[Connection]
   def close(connection: Connection): Unit
 }
 

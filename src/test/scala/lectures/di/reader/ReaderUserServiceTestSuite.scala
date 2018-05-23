@@ -2,26 +2,40 @@ package lectures.di.reader
 
 import java.sql.Connection
 
-import lectures.di.UserServiceTestSuite
+import lectures.di.{Configuration, ConnectionManager, ConnectionManagerImpl, UserServiceTestSuite}
 
-class ReaderUserServiceTestSuite(connection: Connection)(thunk:  => Unit) {
+class ReaderUserServiceTestSuite(thunk:  => Unit)(implicit configuration: Configuration) {
 
   import UserServiceTestSuite._
 
-  private val dropTaleStmt = connection.prepareStatement(dropTale)
-  dropTaleStmt.execute()
+  private val connectionManager = new ConnectionManagerImpl(configuration)
 
-  private val createStmt = connection.prepareStatement(createTable)
-  createStmt.execute()
+  private val maybeConnection = connectionManager.connection
 
-  private val insertStmt = connection.prepareStatement(addUser)
-  connection.commit()
+  if (maybeConnection.isDefined) {
+    val connection = maybeConnection.get
 
-  for ((id, k, v) <- users) {
-    insertStmt.setInt(1, id)
-    insertStmt.setString(2, k)
-    insertStmt.setString(3, v)
-    insertStmt.execute()
+    val dropTaleStmt = connection.prepareStatement(dropTale)
+    dropTaleStmt.execute()
+
+    val createStmt = connection.prepareStatement(createTable)
+    createStmt.execute()
+
+    val insertStmt = connection.prepareStatement(addUser)
+    connection.commit()
+
+    for ((id, k, v) <- users) {
+      insertStmt.setInt(1, id)
+      insertStmt.setString(2, k)
+      insertStmt.setString(3, v)
+      insertStmt.execute()
+    }
+
+    connectionManager.close(connection)
+
+    thunk
+  } else {
+    //log.error
+    println("Unable to get connection!")
   }
-  thunk
 }
