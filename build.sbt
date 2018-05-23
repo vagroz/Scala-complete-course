@@ -12,15 +12,22 @@ lazy val `scala-complete-course` = (project in file("."))
     parallelExecution in ThisBuild := false
   )
   .settings(
-      libraryDependencies ++= Seq(
-        "org.scala-lang" % "scala-library" % "2.12.2",
-        "org.scala-lang" % "scala-reflect" % "2.12.2"
-      ),
-      libraryDependencies ++= testDependencies,
-      libraryDependencies ++= akka,
-      libraryDependencies ++= softwaremill
+    libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-library" % "2.12.2",
+      "org.scala-lang" % "scala-reflect" % "2.12.2"
+    ),
+    libraryDependencies ++= testDependencies,
+    libraryDependencies ++= akka,
+    libraryDependencies ++= softwaremill
   )
   .settings(assemblySettings: _*)
+  .configs(oop)
+  .settings(
+    inConfig(oop)(Defaults.testTasks),
+    testOptions in oop := Seq(
+      Tests.Filter(_.startsWith("lectures.oop."))
+    )
+  )
 
 
 val assemblySettings = Seq (
@@ -28,3 +35,6 @@ val assemblySettings = Seq (
   mainClass in assembly := Some("lectures.oop.TreeTest"),
   assemblyOutputPath in assembly := file(s"target/scala-complete-course-${version.value}.jar")
 )
+
+lazy val oop = config("oop") extend(Test)
+
