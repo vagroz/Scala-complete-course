@@ -42,7 +42,7 @@ object Authentication {
     authByCard.lift(user) ++ authByLP.lift(user)
   }
 
-  val auth = (user: User) => authByCard.lift(user) ++ authByLP.lift(user)
+  val auth = (user: User) => authByCard.orElse(authByLP).lift(user)
 
  authenticated.flatten foreach println
 
