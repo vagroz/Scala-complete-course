@@ -32,6 +32,6 @@ object Fibonacci2 {
   }
   def main (args: Array[String]): Unit ={
     println(fibs2(16))
-    println(fibs2(1000))
+    println(fibs2(2000))
   }
 }

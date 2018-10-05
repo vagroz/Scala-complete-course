@@ -39,7 +39,7 @@ class SQLAPI(resource: String, println: (Any)=>Unit = println) {
 
   }
 
-  private def logParameter[T](prm: T): T  = {
+  private def logParameter(prm: String): String  = {
     println (prm)
     prm
   }
@@ -48,11 +48,11 @@ class SQLAPI(resource: String, println: (Any)=>Unit = println) {
 
   def execute(sql: String): String = (
     (
-      logParameter[String] _  andThen
+      logParameter _  andThen
       connection andThen
       openConnection
-    ) (resource) compose logParameter[String] _
-      andThen logParameter[String] _
+    ) (resource) compose logParameter _
+      andThen logParameter _
     ) (sql)
 
 
