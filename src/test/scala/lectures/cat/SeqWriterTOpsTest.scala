@@ -1,6 +1,7 @@
 package lectures.cat
 
 import cats.data.{Writer, WriterT}
+import cats.kernel.Semigroup
 import org.scalatest.{Matchers, WordSpec}
 import lectures.cat.WriterTOps._
 import cats.{FlatMap, Id, Applicative => CatsApplicative, Monoid => CatsMonoid}
@@ -74,10 +75,17 @@ class SeqWriterTOpsTest extends WordSpec with Matchers {
    */
   "WriterT would count how many times combine would be executed" in {
     val n = Random.nextInt(100)
-    val next = (v: Int) => {
-      Writer(Metrics(0, s"next value is $v"), v)
+    val next: Int => WriterT[Id, Metrics, Int] = (v: Int) => {
+      Writer(Metrics(1, s"next value is $v"), v)
     }
-   val result: Writer[Metrics, Int] = ???
+   val result: Writer[Metrics, Int] = {
+
+     implicit val sm: Semigroup[Metrics] = (x: Metrics, y: Metrics) => Metrics(x.cnt + y.cnt, x.log ++ y.log)
+
+     Range(0, n).foldLeft[WriterT[Id, Metrics, Int]](Writer(Metrics(0, ""), 0)) { case(acc, add) =>
+       acc.flatMap(_ => next(add))
+     }
+   }
 
    n shouldBe result.written.cnt
   }
