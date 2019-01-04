@@ -12,6 +12,7 @@ scalacOptions := Seq(
   "-unchecked",
   "-deprecation",
   "-target:jvm-1.8",
+  "-Ypartial-unification",
   "-Ymacro-debug-lite",
   "-language:experimental.macros")
 
@@ -28,6 +29,8 @@ addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.4")
 libraryDependencies += "org.scala-lang" % "scala-library" % "2.12.6"
 
 libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.12.6"
+
+libraryDependencies += "com.samskivert" % "jmustache" % "1.12"
 
 libraryDependencies += "org.typelevel" %% "cats-core" % "1.1.0"
 
